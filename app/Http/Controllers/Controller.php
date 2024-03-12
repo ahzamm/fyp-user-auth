@@ -52,15 +52,15 @@ class Controller extends BaseController
         $user = User::where('email', $request->email)->first();
 
         if (!$user) {
-            return response()->json(['message' => 'User not found'], 404);
+            return response()->json(['success' => false, 'message' => 'User not found'], 404);
         }
         if (!Hash::check($request->password, $user->password)) {
-            return response()->json(['message' => 'Invalid Credentials']);
+            return response()->json(['success' => false, 'message' => 'Invalid Credentials']);
         }
         $token = $user->createToken('mytoken')->plainTextToken;
 
         return response([
-            'user' => $user, 'token' => $token
+            'success' => true, 'user' => $user, 'token' => $token
         ]);
     }
 
@@ -70,14 +70,14 @@ class Controller extends BaseController
         $token = $request->user()->currentAccessToken();
         $token->delete();
 
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['success' => true, 'message' => 'Logged out successfully']);
     }
 
 
     public function logoutFromAllDevices(Request $request)
     {
         $request->user()->tokens()->delete();
-        return response()->json(['message' => 'Logged out successfully']);
+        return response()->json(['success' => true, 'message' => 'Logged out successfully']);
     }
 
     public function profile(Request $request)
@@ -85,6 +85,7 @@ class Controller extends BaseController
         $user =  $request->user();
 
         return response()->json([
+            'success' => true,
             'user' => [
                 'id' => $user->id,
                 'name' => $user->name,
@@ -104,7 +105,7 @@ class Controller extends BaseController
         $user = $request->user();
 
         if (!Hash::check($request->old_password, $user->password)) {
-            return response()->json(['message' => 'wrong old password']);
+            return response()->json(['success' => true, 'message' => 'wrong old password']);
         }
         $request->user()->tokens()->delete();
 
@@ -113,6 +114,6 @@ class Controller extends BaseController
 
         $token = $user->createToken('mytoken')->plainTextToken;
 
-        return response()->json(['message' => 'Password changed successfully', 'token' => $token], 200);
+        return response()->json(['success' => true, 'message' => 'Password changed successfully', 'token' => $token], 200);
     }
 }
