@@ -14,7 +14,6 @@ class Controller extends BaseController
 
     public function register(Request $request)
     {
-
         try {
             $request->validate([
                 'name' => 'required',
@@ -42,6 +41,7 @@ class Controller extends BaseController
         }
     }
 
+
     public function login(Request $request)
     {
         $request->validate([
@@ -62,6 +62,12 @@ class Controller extends BaseController
         return response([
             'user' => $user, 'token' => $token
         ]);
+    }
+
+    public function logout(Request $request)
+    {
+        $request->user()->tokens()->delete();
+        return response()->json(['message' => 'Logged out successfully']);
     }
 
     public function profile(Request $request)
