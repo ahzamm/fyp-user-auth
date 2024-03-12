@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
-use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -12,7 +10,6 @@ use Illuminate\Validation\ValidationException;
 
 class Controller extends BaseController
 {
-    use AuthorizesRequests, ValidatesRequests;
 
 
     public function register(Request $request)
@@ -34,13 +31,14 @@ class Controller extends BaseController
             $token = $user->createToken('mytoken')->plainTextToken;
 
             return response([
+                'success' => true,
                 'user' => $user,
                 'token' => $token
             ], 201);
         } catch (ValidationException $e) {
-            return response()->json(['error' => $e->validator->errors()->first()], 422);
+            return response()->json(['success' => false, 'error' => $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
-            return response()->json(['error' => $e->getMessage(),], 500);
+            return response()->json(['success' => false, 'error' => $e->getMessage(),], 500);
         }
     }
 
