@@ -35,9 +35,9 @@ class Controller extends BaseController
                 'token' => $token
             ], 201);
         } catch (ValidationException $e) {
-            return response()->json(['success' => false, 'error' => $e->validator->errors()->first()], 422);
+            return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => $e->getMessage(),], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage(),], 500);
         }
     }
 
@@ -105,7 +105,7 @@ class Controller extends BaseController
         $user = $request->user();
 
         if (!Hash::check($request->old_password, $user->password)) {
-            return response()->json(['success' => true, 'message' => 'wrong old password']);
+            return response()->json(['success' => false, 'message' => 'wrong old password']);
         }
         $request->user()->tokens()->delete();
 
