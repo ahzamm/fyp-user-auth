@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 Route::post('/user/register', [Controller::class, 'register']);
 Route::post('/user/login', [Controller::class, 'login']);
 Route::get('/user/check-email/', [Controller::class, 'checkEmail']);
+Route::post('/user/edit-user/', [Controller::class, 'editUser']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/logout', [Controller::class, 'logout']);

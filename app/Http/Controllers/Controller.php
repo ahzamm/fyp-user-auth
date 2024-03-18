@@ -134,4 +134,31 @@ class Controller extends BaseController
             return response()->json(['success' => false]);
         }
     }
+
+    public function editUser(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'name' => 'required',
+            'avatar' => 'required'
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found'], 404);
+        }
+
+        $user->name = $request->name;
+        $user->avatar = $request->avatar;
+        $user->save();
+
+        $token = $user->createToken('mytoken')->plainTextToken;
+
+        return response([
+            'success' => true,
+            'user' => $user,
+            'token' => $token
+        ], 200);
+    }
 }
