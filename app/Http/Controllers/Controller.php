@@ -116,4 +116,20 @@ class Controller extends BaseController
 
         return response()->json(['success' => true, 'message' => 'Password changed successfully', 'token' => $token], 200);
     }
+
+    public function checkEmail(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+        $email = $request->input('email');
+
+        $user = User::where('email', $email)->first();
+
+        if ($user) {
+            return response()->json(['success' => true]);
+        } else {
+            return response()->json(['success' => false]);
+        }
+    }
 }
