@@ -19,12 +19,14 @@ class Controller extends BaseController
                 'name' => 'required',
                 'email' => 'required|email|unique:users',
                 'password' => 'required|confirmed',
+                'avatar' => 'required'
             ]);
 
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
-                'password' => Hash::make($request->password)
+                'password' => Hash::make($request->password),
+                'avatar' => $request->avatar
             ]);
 
             $token = $user->createToken('mytoken')->plainTextToken;
