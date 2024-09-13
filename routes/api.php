@@ -14,4 +14,5 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/user/logout-from-all-devices', [Controller::class, 'logoutFromAllDevices']);
     Route::get('/user/profile', [Controller::class, 'profile']);
     Route::post('/user/change-password', [Controller::class, 'changePassword']);
+    Route::delete('/user/delete-account', [Controller::class, 'deleteAccount']);
 });

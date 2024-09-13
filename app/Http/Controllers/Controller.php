@@ -10,44 +10,44 @@ use Illuminate\Validation\ValidationException;
 
 class Controller extends BaseController
 {
-
-
     public function register(Request $request)
     {
         try {
             $request->validate([
-                'name' => 'required',
-                'email' => 'required|email|unique:users',
+                'name'     => 'required',
+                'email'    => 'required|email|unique:users',
                 'password' => 'required|confirmed',
-                'avatar' => 'required'
+                'avatar'   => 'required',
             ]);
 
             $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
+                'name'     => $request->name,
+                'email'    => $request->email,
                 'password' => Hash::make($request->password),
-                'avatar' => $request->avatar
+                'avatar'   => $request->avatar,
             ]);
 
             $token = $user->createToken('mytoken')->plainTextToken;
 
-            return response([
-                'success' => true,
-                'user' => $user,
-                'token' => $token
-            ], 201);
+            return response(
+                [
+                    'success' => true,
+                    'user'    => $user,
+                    'token'   => $token,
+                ],
+                201,
+            );
         } catch (ValidationException $e) {
             return response()->json(['success' => false, 'message' => $e->validator->errors()->first()], 422);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage(),], 500);
+            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
         }
     }
-
 
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email',
             'password' => 'required',
         ]);
 
@@ -56,16 +56,20 @@ class Controller extends BaseController
         if (!$user) {
             return response()->json(['success' => false, 'message' => 'User not found'], 404);
         }
+        if ($user->is_google_user == 1) {
+            return response()->json(['success' => false, 'message' => 'Your account is already associated with a Google account. Please sign in using the Google option.']);
+        }
         if (!Hash::check($request->password, $user->password)) {
             return response()->json(['success' => false, 'message' => 'Invalid Credentials']);
         }
         $token = $user->createToken('mytoken')->plainTextToken;
 
         return response([
-            'success' => true, 'user' => $user, 'token' => $token
+            'success' => true,
+            'user'    => $user,
+            'token'   => $token,
         ]);
     }
-
 
     public function logout(Request $request)
     {
@@ -75,7 +79,6 @@ class Controller extends BaseController
         return response()->json(['success' => true, 'message' => 'Logged out successfully']);
     }
 
-
     public function logoutFromAllDevices(Request $request)
     {
         $request->user()->tokens()->delete();
@@ -84,22 +87,21 @@ class Controller extends BaseController
 
     public function profile(Request $request)
     {
-        $user =  $request->user();
+        $user = $request->user();
 
         return response()->json([
             'success' => true,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'avatar' => $user->avatar
-            ]
+            'user'    => [
+                'id'     => $user->id,
+                'name'   => $user->name,
+                'email'  => $user->email,
+                'avatar' => $user->avatar,
+            ],
         ]);
     }
 
     public function changePassword(Request $request)
     {
-
         $request->validate([
             'old_password' => 'required',
             'new_password' => 'required|confirmed',
@@ -139,9 +141,9 @@ class Controller extends BaseController
     public function editUser(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'name' => 'required',
-            'avatar' => 'required'
+            'email'  => 'required|email',
+            'name'   => 'required',
+            'avatar' => 'required',
         ]);
 
         $user = User::where('email', $request->email)->first();
@@ -150,16 +152,40 @@ class Controller extends BaseController
             return response()->json(['success' => false, 'message' => 'User not found'], 404);
         }
 
-        $user->name = $request->name;
+        $user->name   = $request->name;
         $user->avatar = $request->avatar;
         $user->save();
 
         $token = $user->createToken('mytoken')->plainTextToken;
 
-        return response([
-            'success' => true,
-            'user' => $user,
-            'token' => $token
-        ], 200);
+        return response(
+            [
+                'success' => true,
+                'user'    => $user,
+                'token'   => $token,
+            ],
+            200,
+        );
     }
+
+    public function deleteAccount(Request $request)
+    {
+        try {
+            // Retrieve the authenticated user
+            $user = $request->user();
+
+            if (!$user) {
+                return response()->json(['success' => false, 'message' => 'User not found'], 404);
+            }
+
+            // Delete the user
+            $user->tokens()->delete(); // Revoke all tokens associated with the user
+            $user->delete(); // Delete the user account
+
+            return response()->json(['success' => true, 'message' => 'Account deleted successfully'], 200);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to delete account: ' . $e->getMessage()], 500);
+        }
+    }
+
 }
